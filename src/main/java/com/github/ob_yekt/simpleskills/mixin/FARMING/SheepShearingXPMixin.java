@@ -19,7 +19,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(SheepEntity.class)
 public abstract class SheepShearingXPMixin {
-    @Inject(method = "interactMob", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/passive/SheepEntity;sheared(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/sound/SoundCategory;Lnet/minecraft/item/ItemStack;)V"))
+    @Inject(method = "interactMob",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/passive/SheepEntity;sheared(Lnet/minecraft/sound/SoundCategory;)V"
+            )
+    )
     private void addXPOnShear(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         if (player instanceof ServerPlayerEntity serverPlayer && !serverPlayer.getEntityWorld().isClient()) {
             int xp = ConfigManager.getFarmingActionXP("shear_sheep", Skills.FARMING);

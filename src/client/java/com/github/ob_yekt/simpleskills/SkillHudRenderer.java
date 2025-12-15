@@ -2,9 +2,7 @@ package com.github.ob_yekt.simpleskills;
 
 import com.github.ob_yekt.simpleskills.managers.DatabaseManager;
 import com.github.ob_yekt.simpleskills.managers.XPManager;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -16,8 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class SkillHudRenderer implements HudElement {
-    private static final Identifier HUD_ID = Identifier.of("simpleskills", "skill_hud");
+public class SkillHudRenderer {
     private static final Map<UUID, Boolean> playerHudVisibility = new HashMap<>();
     private static final int MAX_SKILL_NAME_LENGTH = getMaxSkillNameLength();
     private static final int PADDING = 3;
@@ -40,6 +37,10 @@ public class SkillHudRenderer implements HudElement {
     private static HudSize cachedSize = null;
     private static long lastSkillUpdateTime = 0;
 
+    public SkillHudRenderer() {
+        HudRenderCallback.EVENT.register(this::render);
+    }
+
     private static class HudSize {
         int width;
         int height;
@@ -51,7 +52,7 @@ public class SkillHudRenderer implements HudElement {
     }
 
     public static void register() {
-        HudElementRegistry.attachElementAfter(VanillaHudElements.BOSS_BAR, HUD_ID, new SkillHudRenderer());
+        new SkillHudRenderer();
     }
 
     private static int getMaxSkillNameLength() {
@@ -255,7 +256,6 @@ public class SkillHudRenderer implements HudElement {
         return new int[]{x, y};
     }
 
-    @Override
     public void render(DrawContext context, RenderTickCounter tickCounter) {
         if (!shouldRenderHud()) return;
 

@@ -45,6 +45,7 @@ import net.minecraft.util.Identifier;
 
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -307,18 +308,18 @@ public class EventHandlers {
         // Prevent ranged weapon use (bow/crossbow/trident throw) if requirement not met
         UseItemCallback.EVENT.register((player, world, hand) -> {
             if (world.isClient() || !(player instanceof ServerPlayerEntity serverPlayer)) {
-                return ActionResult.PASS;
+                return TypedActionResult.pass(null);
             }
 
             ItemStack stack = player.getStackInHand(hand);
             if (stack.isEmpty()) {
-                return ActionResult.PASS;
+                return TypedActionResult.pass(stack);
             }
 
             String itemId = Registries.ITEM.getId(stack.getItem()).toString();
             SkillRequirement requirement = ConfigManager.getWeaponRequirement(itemId);
             if (requirement == null) {
-                return ActionResult.PASS;
+                return TypedActionResult.pass(stack);
             }
 
             Skills skill = requirement.getSkill();
@@ -326,7 +327,7 @@ public class EventHandlers {
             if (playerLevel < requirement.getLevel()) {
                 serverPlayer.sendMessage(Text.literal(String.format("§6[simpleskills]§f You need %s level %d to use this weapon!",
                         skill.getDisplayName(), requirement.getLevel())), true);
-                return ActionResult.FAIL;
+                return TypedActionResult.fail(stack);
             }
 
             int requiredPrestige = requirement.getRequiredPrestige();
@@ -335,11 +336,11 @@ public class EventHandlers {
                 if (playerPrestige < requiredPrestige) {
                     serverPlayer.sendMessage(Text.literal(String.format("§6[simpleskills]§f You need Prestige ★%d to use this weapon!",
                             requiredPrestige)), true);
-                    return ActionResult.FAIL;
+                    return TypedActionResult.fail(stack);
                 }
             }
 
-            return ActionResult.PASS;
+            return TypedActionResult.pass(stack);
         });
 
         // Grant XP on successful damage for Slaying, Ranged, and Defense
@@ -574,13 +575,6 @@ public class EventHandlers {
                         hitResult.getBlockPos().getZ() + 0.5,
                         20, 0.2, 0.2, 0.2, 0.05
                 );
-                serverWorld.spawnParticles(
-                        net.minecraft.particle.ParticleTypes.COPPER_FIRE_FLAME,
-                        hitResult.getBlockPos().getX() + 0.5,
-                        hitResult.getBlockPos().getY() + 1.0,
-                        hitResult.getBlockPos().getZ() + 0.4,
-                        20, 0.2, 0.2, 0.2, 0.05
-                );
                 serverWorld.playSound(
                         null,
                         hitResult.getBlockPos(),
@@ -604,7 +598,7 @@ public class EventHandlers {
         ItemStack toolStack = player.getEquippedStack(EquipmentSlot.MAINHAND);
         var enchantmentRegistry = Objects.requireNonNull(player.getEntityWorld().getServer())
                 .getRegistryManager()
-                .getOrThrow(RegistryKeys.ENCHANTMENT);
+                .getWrapperOrThrow(RegistryKeys.ENCHANTMENT);
         RegistryEntry<Enchantment> silkTouchEntry = enchantmentRegistry
                 .getOptional(Enchantments.SILK_TOUCH)
                 .orElse(null);

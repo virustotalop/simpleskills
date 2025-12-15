@@ -46,13 +46,13 @@ public class AttributeManager {
 
     public static void clearSkillAttributes(ServerPlayerEntity player) {
         if (player == null) return;
-        EntityAttributeInstance moveSpeed = player.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED);
+        EntityAttributeInstance moveSpeed = player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
         if (moveSpeed != null) moveSpeed.removeModifier(Identifier.of("simpleskills:agility_bonus"));
     }
 
     public static void applyIronmanAttributes(ServerPlayerEntity player) {
         if (player == null) return;
-        EntityAttributeInstance healthAttribute = player.getAttributeInstance(EntityAttributes.MAX_HEALTH);
+        EntityAttributeInstance healthAttribute = player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
         if (healthAttribute != null) {
             healthAttribute.removeModifier(IRONMAN_HEALTH_MODIFIER_ID);
             double healthReduction = ConfigManager.getFeatureConfig().get("ironman_health_reduction") != null ?
@@ -69,7 +69,7 @@ public class AttributeManager {
 
     public static void clearIronmanAttributes(ServerPlayerEntity player) {
         if (player == null) return;
-        EntityAttributeInstance healthAttribute = player.getAttributeInstance(EntityAttributes.MAX_HEALTH);
+        EntityAttributeInstance healthAttribute = player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
         if (healthAttribute != null) {
             healthAttribute.removeModifier(IRONMAN_HEALTH_MODIFIER_ID);
         }
@@ -90,7 +90,7 @@ public class AttributeManager {
 
         switch (skill) {
             case AGILITY -> {
-                EntityAttributeInstance moveSpeed = player.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED);
+                EntityAttributeInstance moveSpeed = player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
                 if (moveSpeed != null) {
                     moveSpeed.removeModifier(Identifier.of("simpleskills:agility_bonus"));
                     double bonusSpeed = skillLevel * 0.001;

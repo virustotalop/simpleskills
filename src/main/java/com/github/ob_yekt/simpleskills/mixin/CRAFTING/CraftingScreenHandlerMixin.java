@@ -8,14 +8,11 @@ import com.github.ob_yekt.simpleskills.utils.CraftingCommon;
 
 import com.llamalad7.mixinextras.sugar.Local;
 
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
-import net.minecraft.screen.AbstractCraftingScreenHandler;
 import net.minecraft.screen.CraftingScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
 
@@ -27,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(CraftingScreenHandler.class)
-public abstract class CraftingScreenHandlerMixin extends AbstractCraftingScreenHandler {
+public abstract class CraftingScreenHandlerMixin {
 
     @Unique
     private final RecipeInputInventory craftingInventory = getCraftingInventory();
@@ -35,25 +32,24 @@ public abstract class CraftingScreenHandlerMixin extends AbstractCraftingScreenH
     @Unique
     private final ItemStack[] originalInputs = new ItemStack[9];
 
-    protected CraftingScreenHandlerMixin(ScreenHandlerType<?> type, int syncId, int gridWidth, int gridHeight) {
-        super(type, syncId, gridWidth, gridHeight);
-    }
 
     @Unique
     private RecipeInputInventory getCraftingInventory() {
-        return ((AbstractCraftingScreenHandlerAccessor) this).getCraftingInventory();
+        return ((CraftingScreenHandlerAccessor) this).getCraftingInventory();
     }
 
     @Inject(
             method = "quickMove",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/item/Item;onCraftByPlayer(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/player/PlayerEntity;)V",
+                    target = "Lnet/minecraft/screen/ScreenHandlerContext;run(Ljava/util/function/BiConsumer;)V",
                     shift = At.Shift.AFTER
-            ),
-            locals = LocalCapture.CAPTURE_FAILHARD
+            )
     )
-    private void onQuickMoveCraft(PlayerEntity player, int slotIndex, CallbackInfoReturnable<ItemStack> cir, @Local(ordinal = 0) ItemStack itemStack, @Local Slot slot, @Local(ordinal = 1) ItemStack itemStack2) {
+    private void onQuickMoveCraft(PlayerEntity player,
+                                  int slotIndex,
+                                  CallbackInfoReturnable<ItemStack> cir,
+                                  @Local(ordinal = 1) ItemStack itemStack2) {
         if (slotIndex == 0 && player instanceof ServerPlayerEntity serverPlayer) {
             // Skip if stack is empty or represents air
             if (itemStack2.isEmpty() || Registries.ITEM.getId(itemStack2.getItem()).toString().equals("minecraft:air")) {

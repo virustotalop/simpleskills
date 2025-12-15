@@ -152,7 +152,10 @@ public final class CraftingCommon {
         FoodComponent scaledFood = new FoodComponent(
                 newNutrition,
                 newSaturation,
-                originalFood.canAlwaysEat()
+                originalFood.canAlwaysEat(),
+                originalFood.eatSeconds(),
+                originalFood.usingConvertsTo(),
+                originalFood.effects()
         );
 
         stack.set(DataComponentTypes.FOOD, scaledFood);

@@ -1,6 +1,7 @@
 package com.github.ob_yekt.simpleskills;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 
 public class SimpleskillsClient implements ClientModInitializer {
@@ -10,6 +11,7 @@ public class SimpleskillsClient implements ClientModInitializer {
         Keybinds.register();
         SkillHudRenderer.register();
         ClientConfig.load();
+
         Simpleskills.LOGGER.info("[simpleskills] Skill HUD & keybinds registered.");
     }
 

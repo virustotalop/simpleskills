@@ -190,7 +190,7 @@ public class XPManager {
 
     // Handle level-up effects
     private static void triggerLevelUpEffects(ServerPlayerEntity player, Skills skill, int newLevel) {
-        ServerWorld serverWorld = player.getEntityWorld();
+        ServerWorld serverWorld = (ServerWorld) player.getEntityWorld();
         String levelUpMessage;
         boolean isMaxLevel = newLevel == MAX_LEVEL;
         if (isMaxLevel) {

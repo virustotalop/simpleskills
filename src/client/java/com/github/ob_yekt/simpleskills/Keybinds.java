@@ -9,7 +9,8 @@ import org.lwjgl.glfw.GLFW;
 
 public class Keybinds {
     // Use an existing category, e.g., MISC
-    public static final KeyBinding.Category KEY_CATEGORY = KeyBinding.Category.MISC;
+    public static final String KEY_CATEGORY = KeyBinding.MISC_CATEGORY;
+
 
     public static final KeyBinding TOGGLE_HUD_KEY = new KeyBinding(
             "key.simpleskills.toggle_hud",

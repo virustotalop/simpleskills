@@ -13,8 +13,6 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.CommandSource;
-import net.minecraft.command.permission.Permission;
-import net.minecraft.command.permission.PermissionLevel;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -26,7 +24,6 @@ import net.minecraft.util.Formatting;
 import net.minecraft.particle.ParticleTypes;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,7 +38,7 @@ public class SimpleskillsCommands {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
                 dispatcher.register(
                         CommandManager.literal("simpleskills")
-                                .requires(source -> source.getPermissions().hasPermission(new Permission.Level(PermissionLevel.ALL)))
+                                .requires(source -> source.hasPermissionLevel(4))
                                 .then(CommandManager.literal("togglehud")
                                         .executes(context -> {
                                             SkillTabMenu.toggleTabMenuVisibility(context.getSource());
@@ -51,12 +48,12 @@ public class SimpleskillsCommands {
                                         .then(CommandManager.literal("enable")
                                                 .executes(SimpleskillsCommands::enableIronman))
                                         .then(CommandManager.literal("disable")
-                                                .requires(source -> source.getPermissions().hasPermission(new Permission.Level(PermissionLevel.MODERATORS)))
+                                                .requires(source -> source.hasPermissionLevel(4))
                                                 .executes(SimpleskillsCommands::disableIronman)))
                                 .then(CommandManager.literal("prestige")
                                         .executes(SimpleskillsCommands::prestige))
                                 .then(CommandManager.literal("reload")
-                                        .requires(source -> source.getPermissions().hasPermission(new Permission.Level(PermissionLevel.MODERATORS)))
+                                        .requires(source -> source.hasPermissionLevel(4))
                                         .executes(context -> {
                                             ConfigManager.initialize();
                                             XPManager.reloadConfig();
@@ -65,12 +62,12 @@ public class SimpleskillsCommands {
                                         }))
                                 .then(CommandManager.literal("reset")
                                         .then(CommandManager.argument("username", StringArgumentType.string())
-                                                .requires(source -> source.getPermissions().hasPermission(new Permission.Level(PermissionLevel.MODERATORS)))
+                                                .requires(source -> source.hasPermissionLevel(4))
                                                 .suggests((context, builder) -> CommandSource.suggestMatching(getOnlinePlayerNames(context), builder))
                                                 .executes(SimpleskillsCommands::resetSkillsForPlayer))
                                         .executes(SimpleskillsCommands::resetSkillsForPlayer))
                                 .then(CommandManager.literal("addxp")
-                                        .requires(source -> source.getPermissions().hasPermission(new Permission.Level(PermissionLevel.MODERATORS)))
+                                        .requires(source -> source.hasPermissionLevel(4))
                                         .then(CommandManager.argument("targets", StringArgumentType.string())
                                                 .suggests((context, builder) -> CommandSource.suggestMatching(getOnlinePlayerNames(context), builder))
                                                 .then(CommandManager.argument("skill", StringArgumentType.word())
@@ -78,7 +75,7 @@ public class SimpleskillsCommands {
                                                         .then(CommandManager.argument("amount", IntegerArgumentType.integer(0))
                                                                 .executes(SimpleskillsCommands::addXP)))))
                                 .then(CommandManager.literal("setlevel")
-                                        .requires(source -> source.getPermissions().hasPermission(new Permission.Level(PermissionLevel.MODERATORS)))
+                                        .requires(source -> source.hasPermissionLevel(4))
                                         .then(CommandManager.argument("targets", StringArgumentType.string())
                                                 .suggests((context, builder) -> CommandSource.suggestMatching(getOnlinePlayerNames(context), builder))
                                                 .then(CommandManager.argument("skill", StringArgumentType.word())
@@ -86,7 +83,7 @@ public class SimpleskillsCommands {
                                                         .then(CommandManager.argument("level", IntegerArgumentType.integer(1, XPManager.getMaxLevel()))
                                                                 .executes(SimpleskillsCommands::setLevel)))))
                                 .then(CommandManager.literal("setprestige")
-                                        .requires(source -> source.getPermissions().hasPermission(new Permission.Level(PermissionLevel.MODERATORS)))
+                                        .requires(source -> source.hasPermissionLevel(4))
                                         .then(CommandManager.argument("targets", StringArgumentType.string())
                                                 .suggests((context, builder) -> CommandSource.suggestMatching(getOnlinePlayerNames(context), builder))
                                                 .then(CommandManager.argument("value", IntegerArgumentType.integer(0))
@@ -175,7 +172,7 @@ public class SimpleskillsCommands {
         IronmanManager.applyIronmanMode(player);
         player.sendMessage(Text.literal("§6[simpleskills]§f You have enabled Ironman Mode!").formatted(Formatting.YELLOW), false);
 
-        ServerWorld world = player.getEntityWorld();
+        ServerWorld world = (ServerWorld) player.getEntityWorld();
         world.spawnParticles(ParticleTypes.TOTEM_OF_UNDYING, player.getX(), player.getY() + 1.0, player.getZ(), 50, 0.5, 0.5, 0.5, 0.1);
         world.playSound(null, player.getBlockPos(), SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.PLAYERS, 0.7f, 1.3f);
         Simpleskills.LOGGER.info("Player {} enabled Ironman Mode.", player.getName().getString());
@@ -203,7 +200,7 @@ public class SimpleskillsCommands {
 
     private static int resetSkillsForPlayer(CommandContext<ServerCommandSource> context) {
         ServerCommandSource source = context.getSource();
-        String playerName = source.getEntity() instanceof ServerPlayerEntity ? Objects.requireNonNull(source.getPlayer()).getGameProfile().name() : StringArgumentType.getString(context, "username");
+        String playerName = source.getEntity() instanceof ServerPlayerEntity ? Objects.requireNonNull(source.getPlayer()).getGameProfile().getName() : StringArgumentType.getString(context, "username");
         ServerPlayerEntity targetPlayer = source.getServer().getPlayerManager().getPlayer(playerName);
         if (targetPlayer == null) {
             source.sendError(Text.literal("§6[simpleskills]§f Player '" + playerName + "' not found."));
@@ -459,7 +456,7 @@ public class SimpleskillsCommands {
 
     private static List<String> getOnlinePlayerNames(CommandContext<ServerCommandSource> context) {
         return context.getSource().getServer().getPlayerManager().getPlayerList().stream()
-                .map(player -> player.getGameProfile().name())
+                .map(player -> player.getGameProfile().getName())
                 .collect(Collectors.toList());
     }
 

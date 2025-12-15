@@ -7,6 +7,7 @@ import com.github.ob_yekt.simpleskills.requirements.SkillRequirement;
 import com.github.ob_yekt.simpleskills.managers.XPManager;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -20,21 +21,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Mixin to restrict armor equipping for ServerPlayerEntity based on skill levels.
  */
-@Mixin(LivingEntity.class)
+@Mixin(PlayerEntity.class)
 public abstract class ArmorRestrictionMixin {
 
-    @Inject(
+    @Inject(at = @At("HEAD"),
             method = "equipStack",
-            at = @At("HEAD"),
             cancellable = true
     )
-    private void restrictArmorEquip(EquipmentSlot slot, ItemStack stack, CallbackInfo ci) {
-        // Only apply restrictions to players
-        if (!((Object) this instanceof ServerPlayerEntity player)) {
-            Simpleskills.LOGGER.debug("Skipping armor restriction for non-player entity: {}", this.getClass().getName());
-            return;
-        }
-
+    public void restrictArmorEquip(EquipmentSlot slot, ItemStack stack, CallbackInfo ci) {
+        PlayerEntity player = (PlayerEntity) (Object) this;
         Simpleskills.LOGGER.info("Mixin applied to ServerPlayerEntity, class: {}", this.getClass().getName());
         Simpleskills.LOGGER.debug("Processing for player: {}", player.getName().getString());
 

@@ -8,17 +8,20 @@ import com.github.ob_yekt.simpleskills.managers.XPManager;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.screen.ForgingScreenHandler;
+import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.SmithingScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -31,8 +34,11 @@ import java.util.List;
 @Mixin(SmithingScreenHandler.class)
 public abstract class SmithingScreenHandlerMixin extends ForgingScreenHandler {
 
-    protected SmithingScreenHandlerMixin(ScreenHandlerType<?> type, int syncId, PlayerEntity player) {
-        super(type, syncId, player.getInventory(), null, null);
+    public SmithingScreenHandlerMixin(@Nullable ScreenHandlerType<?> type,
+                                      int syncId,
+                                      PlayerInventory playerInventory,
+                                      ScreenHandlerContext context) {
+        super(type, syncId, playerInventory, context);
     }
 
     @Inject(method = "updateResult", at = @At("TAIL"))

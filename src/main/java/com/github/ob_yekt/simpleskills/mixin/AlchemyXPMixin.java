@@ -119,7 +119,6 @@ public abstract class AlchemyXPMixin {
 
         PotionContentsComponent contents = stack.get(DataComponentTypes.POTION_CONTENTS);
         if (contents == null) return;
-
         // --- Collect base potion effects ---
         List<StatusEffectInstance> baseEffects = contents.potion()
                 .map(potionEntry -> potionEntry.value().getEffects())
@@ -152,8 +151,7 @@ public abstract class AlchemyXPMixin {
         PotionContentsComponent scaled = new PotionContentsComponent(
                 contents.potion(),
                 contents.customColor(),
-                scaledEffects,
-                contents.customName()
+                scaledEffects
         );
 
         stack.set(DataComponentTypes.POTION_CONTENTS, scaled);

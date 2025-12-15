@@ -50,13 +50,14 @@ public abstract class AnvilScreenHandlerMixin extends ForgingScreenHandler imple
     @Unique
     private boolean simpleskills$isPureRepair = false;
 
-    protected AnvilScreenHandlerMixin(ScreenHandlerType<?> type, int syncId, PlayerInventory playerInventory, ScreenHandlerContext context) {
-        super(type, syncId, playerInventory, context, getForgingSlotsManager());
+    public AnvilScreenHandlerMixin(@Nullable ScreenHandlerType<?> type, int syncId, PlayerInventory playerInventory, ScreenHandlerContext context) {
+        super(type, syncId, playerInventory, context);
     }
 
+
     @Unique
-    private static ForgingSlotsManager getForgingSlotsManager() {
-        return ForgingSlotsManager.builder()
+    public ForgingSlotsManager getForgingSlotsManager() {
+        return ForgingSlotsManager.create()
                 .input(0, 27, 47, stack -> true)
                 .input(1, 76, 47, stack -> true)
                 .output(2, 134, 47)
@@ -84,7 +85,7 @@ public abstract class AnvilScreenHandlerMixin extends ForgingScreenHandler imple
             return;
         }
 
-        boolean isMaterialRepair = input1.canRepairWith(input2);
+        boolean isMaterialRepair = input1.getItem().canRepair(input1, input2);
         boolean isItemCombinationRepair = input1.isOf(input2.getItem()) && input2.isDamageable();
 
         // Exclude enchanted books unless we are strictly repairing
@@ -189,7 +190,7 @@ public abstract class AnvilScreenHandlerMixin extends ForgingScreenHandler imple
             int enchantmentLevel = outputStack.getEnchantments().getLevel(enchantmentEntry);
             Identifier enchantmentId = serverPlayer.getEntityWorld()
                     .getRegistryManager()
-                    .getOrThrow(RegistryKeys.ENCHANTMENT)
+                    .get(RegistryKeys.ENCHANTMENT)
                     .getId(enchantment);
             if (enchantmentId == null) continue;
 
