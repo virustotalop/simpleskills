@@ -1,12 +1,12 @@
-package com.github.ob_yekt.simpleskills.mixin;
+package com.github.ob_yekt.simpleskills.mixin.AGILITY;
 
 import com.github.ob_yekt.simpleskills.Simpleskills;
 import com.github.ob_yekt.simpleskills.Skills;
 import com.github.ob_yekt.simpleskills.managers.ConfigManager;
 import com.github.ob_yekt.simpleskills.managers.XPManager;
+import com.github.ob_yekt.simpleskills.utils.XPAwardable;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Mixin(ServerPlayerEntity.class)
-public abstract class AgilityXPMixin {
+public abstract class AgilityXPMixin implements XPAwardable {
     @Unique
     private static final Map<UUID, Map<String, Long>> lastActionTimes = new HashMap<>();
     @Unique
@@ -35,7 +35,8 @@ public abstract class AgilityXPMixin {
 
     // Helper method to check and update cooldown for a specific action
     @Unique
-    private boolean canAwardXP(ServerPlayerEntity player, String action) {
+    @Override
+    public boolean canAwardXP(ServerPlayerEntity player, String action) {
         long currentTick = player.getEntityWorld().getTime();
         Map<String, Long> playerTimes = lastActionTimes.computeIfAbsent(player.getUuid(), k -> new HashMap<>());
         long lastActionTick = playerTimes.getOrDefault(action, 0L);
@@ -49,7 +50,7 @@ public abstract class AgilityXPMixin {
 
     // Fall Damage: Hook into damage method
     @Inject(method = "damage", at = @At("RETURN"))
-    private void onDamage(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+    private void onDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         ServerPlayerEntity player = (ServerPlayerEntity)(Object)this;
         if (source == player.getDamageSources().fall() && cir.getReturnValue() && canAwardXP(player, "fall_damage")) {
             // Scale XP based on damage taken (e.g., 5 XP per heart of damage)
@@ -57,18 +58,6 @@ public abstract class AgilityXPMixin {
             XPManager.addXPSilent(player, Skills.AGILITY, xp);
 //            Simpleskills.LOGGER.debug("Granted {} Agility XP for fall damage ({} hearts) to player {}",
 //                    xp, amount / 2, player.getName().getString());
-        }
-    }
-
-    // Jumping: Hook into jump method
-    @Inject(method = "jump", at = @At("TAIL"))
-    private void onJump(CallbackInfo ci) {
-        ServerPlayerEntity player = (ServerPlayerEntity)(Object)this;
-        if (canAwardXP(player, "jump")) {
-            int xp = ConfigManager.getAgilityXP("jump", Skills.AGILITY);
-            XPManager.addXPSilent(player, Skills.AGILITY, xp);
-//            Simpleskills.LOGGER.debug("Granted {} Agility XP for jumping to player {}",
-//                    xp, player.getName().getString());
         }
     }
 
